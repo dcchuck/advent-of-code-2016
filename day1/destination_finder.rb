@@ -1,17 +1,11 @@
 require "rspec/autorun"
 require_relative "instructions.rb"
 
-# destination_finder = DestinationFinder.new
-# instructions = Instructions.new
-# destination_finder.locate(instructions) => [x, y]
-# destination_finder.distance(instruction) => |x| + |y|
-
 class DestinationFinder
 
   def initialize instructions
     @instructions = instructions.sequence
     @starting_position = [0,0,:north]
-    # @destination = find_destination(instructions)
   end
 
   def destination
