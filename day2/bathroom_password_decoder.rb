@@ -4,15 +4,97 @@ require_relative 'instructions.rb'
 class BathroomPasswordDecoder
 
   attr_reader :bathroom_password
+  attr_reader :complex_password
 
   def initialize instructions
     @instructions = instructions
     @starting_position = 5
     @bathroom_password = follow(@instructions)
+    @complex_password = complex_follow(@instructions)
   end
 
   private
 
+  COMPLEX_PAD = {
+  one: {
+    U: :one,
+    D: :three,
+    L: :one,
+    R: :one
+  },
+  two: {
+    U: :two,
+    D: :six,
+    L: :two,
+    R: :three
+  },
+  three: {
+    U: :one,
+    D: :seven,
+    L: :two,
+    R: :four
+  },
+  four: {
+    U: :four,
+    D: :eight,
+    L: :three,
+    R: :four
+  },
+  five: {
+    U: :five,
+    D: :five,
+    L: :five,
+    R: :six
+  },
+  six: {
+    U: :two,
+    D: :a,
+    L: :five,
+    R: :seven
+  },
+  seven: {
+    U: :three,
+    D: :b,
+    L: :six,
+    R: :eight
+  },
+  eight: {
+    U: :four,
+    D: :c,
+    L: :seven,
+    R: :nine
+  },
+  nine: {
+    U: :nine,
+    D: :nine,
+    L: :eight,
+    R: :nine
+  },
+  a: {
+    U: :six,
+    D: :a,
+    L: :a,
+    R: :b
+  },
+  b: {
+    U: :seven,
+    D: :d,
+    L: :a,
+    R: :c
+  },
+  c: {
+    U: :eight,
+    D: :c,
+    L: :b,
+    R: :c
+  },
+  d: {
+    U: :b,
+    D: :d,
+    L: :d,
+    R: :d
+  }
+}
   NEXT_BUTTON = [
     {},
     { U: 1,
@@ -64,6 +146,18 @@ class BathroomPasswordDecoder
     password
   end
 
+  def complex_follow instructions
+    password = []
+    current_button = :five
+    instructions.each do |button|
+      button.each do |direction|
+        current_button = COMPLEX_PAD[current_button][direction]
+      end
+      password << current_button
+    end
+    password
+  end
+
 end
 
 describe BathroomPasswordDecoder do
@@ -73,7 +167,17 @@ describe BathroomPasswordDecoder do
       instructions = Instructions.new(sample_instructions).parsed
 
       bathroom_password_decoder = BathroomPasswordDecoder.new(instructions)
-      expect(bathroom_password_decoder.bathroom_password).to match_array([1,9,8,5])
+      expect(bathroom_password_decoder.bathroom_password).to match_array([1, 5, 8, 9])
+    end
+  end
+
+  describe "#complex_password" do
+    it "returns the decoded bathroom code based on a set of instructions" do
+      sample_instructions = "ULL\nRRDDD\nLURDL\nUUUUD"
+      instructions = Instructions.new(sample_instructions).parsed
+
+      bathroom_password_decoder = BathroomPasswordDecoder.new(instructions)
+      expect(bathroom_password_decoder.complex_password).to match_array([:five, :d, :b, :three])
     end
   end
 end
